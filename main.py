@@ -12,7 +12,7 @@ def display_image_from_array(array):
 
 load_model = True
 
-train_size = 3000
+train_size = 6000
 val_size = 200
 num_of_filters = 32
 basePath = "C:/Users/allan/OneDrive/Desktop/Face verification dataset/Face Data/Face Dataset"

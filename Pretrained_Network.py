@@ -20,7 +20,7 @@ class Pretrained_Network:
 
     def train_the_model(self):
         my_callback = callbacks.LambdaCallback(on_epoch_end=self.validate_the_model)
-        self.model.fit([self.train_left_array, self.train_right_array], self.train_label_array, epochs=1, shuffle=True,batch_size=8, callbacks=my_callback)
+        self.model.fit([self.train_left_array, self.train_right_array], self.train_label_array, epochs=3, shuffle=True,batch_size=4, callbacks=my_callback)
         pass
 
     def validate_the_model(self, batch, logs):
