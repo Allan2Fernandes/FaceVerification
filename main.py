@@ -3,6 +3,7 @@ import Siamese_Network_builder_v1 as sn
 import Prebuilt_Network as pn
 from matplotlib import pyplot as plt
 import Siamese_Network_builder_v2 as sn2
+import SIamese_Network_builder_v3 as sn3
 import tensorflow as tf
 
 
@@ -23,7 +24,13 @@ save_path = "saved_model/my_model" + str(num_of_filters) + ".h5"
 #siamese_network.show_model_summary()
 #siamese_network.compile_the_model()
 
-siamese_network = sn2.Siamese_Network_builder_v2(num_of_filters=num_of_filters, save_path=save_path)
+#siamese_network = sn2.Siamese_Network_builder_v2(num_of_filters=num_of_filters, save_path=save_path)
+#siamese_network.define_Model_architecture()
+#siamese_network.show_model_summary()
+#siamese_network.compile_the_model()
+
+
+siamese_network = sn3.Siamese_Network_builder_v3(32, save_path)
 siamese_network.define_Model_architecture()
 siamese_network.show_model_summary()
 siamese_network.compile_the_model()
@@ -34,15 +41,15 @@ else:
     model = siamese_network.load_the_model()
 
 
-input_list_builder = bil.BuildInputLists(basePath)
-input_list_builder.build_list_Image_folders()
-input_list_builder.build_positive_list()
-input_list_builder.build_negative_list(train_size + val_size)  # Size of negative list
-train_left_array, train_right_array, train_label_array, validation_left_array, validation_right_array, validation_label_array = input_list_builder.build_input_and_label_matrices(train_size, val_size)
+#input_list_builder = bil.BuildInputLists(basePath)
+#input_list_builder.build_list_Image_folders()
+#input_list_builder.build_positive_list()
+#input_list_builder.build_negative_list(train_size + val_size)  # Size of negative list
+#train_left_array, train_right_array, train_label_array, validation_left_array, validation_right_array, validation_label_array = input_list_builder.build_input_and_label_matrices(train_size, val_size)
 
-pretrained_model = pn.Prebuilt_Network(model, train_left_array, train_right_array, train_label_array, validation_left_array, validation_right_array, validation_label_array, save_path)
-pretrained_model.train_the_model()
-pretrained_model.save_the_model()
+#pretrained_model = pn.Prebuilt_Network(model, train_left_array, train_right_array, train_label_array, validation_left_array, validation_right_array, validation_label_array, save_path)
+#pretrained_model.train_the_model()
+#pretrained_model.save_the_model()
 
 
 
