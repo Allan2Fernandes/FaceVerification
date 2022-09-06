@@ -1,8 +1,11 @@
+from datetime import datetime
 import tensorflow
 from tensorflow import keras
 from keras import callbacks
+import numpy as np
+import matplotlib.pyplot as plt
 
-class Pretrained_Network:
+class Prebuilt_Network:
     def __init__(self, model, train_left_array, train_right_array, train_label_array, val_left_array, val_right_array, val_label_array, save_path):
         self.model = model
         self.train_left_array = train_left_array
@@ -19,8 +22,8 @@ class Pretrained_Network:
         pass
 
     def train_the_model(self):
-        my_callback = callbacks.LambdaCallback(on_epoch_end=self.validate_the_model)
-        self.model.fit([self.train_left_array, self.train_right_array], self.train_label_array, epochs=3, shuffle=True,batch_size=4, callbacks=my_callback)
+
+        self.model.fit([self.train_left_array, self.train_right_array], self.train_label_array, epochs=50, shuffle=True,batch_size=16, validation_data = ([self.val_left_array, self.val_right_array], self.val_label_array))
         pass
 
     def validate_the_model(self, batch, logs):

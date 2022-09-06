@@ -1,11 +1,12 @@
 import tensorflow as tf
 from keras import Model
-from keras.layers import Conv2D, ReLU, MaxPool2D, Flatten, Dense, Input, Dropout, Lambda
+from keras.layers import Conv2D, ReLU, MaxPool2D, Flatten, Dense, Input, Lambda, BatchNormalization, Dropout
 from keras.activations import sigmoid
 from keras import optimizers
-from keras import callbacks
 
-class Siamese_Network:
+
+
+class Siamese_Network_builder_v1:
     def __init__(self, num_of_filters, save_path):
         self.num_of_filters = num_of_filters
         self.save_path = save_path
@@ -33,7 +34,8 @@ class Siamese_Network:
 
     def convolutional_block(self, input_layer, starting_num_of_filters):
         conv2dLayer1 = Conv2D(padding = 'same', kernel_size=(3,3), strides=(1,1), filters=starting_num_of_filters)(input_layer)
-        reluLayer1 = ReLU()(conv2dLayer1)
+        normalizationLayer = BatchNormalization()(conv2dLayer1)
+        reluLayer1 = ReLU()(normalizationLayer)
         maxPoolLayer1 = MaxPool2D(padding='valid',strides=(2,2), pool_size=(2,2))(reluLayer1)
 
         conv2dLayer2 = Conv2D(padding='same', kernel_size=(3, 3), strides=(1, 1), filters=starting_num_of_filters*2)(maxPoolLayer1)
@@ -53,8 +55,9 @@ class Siamese_Network:
         maxPoolLayer5 = MaxPool2D(padding='valid', strides=(2, 2), pool_size=(2, 2))(reluLayer5)
 
         flattenLayer = Flatten()(maxPoolLayer5)
-        DenseLayer = Dense(units=50)(flattenLayer)
-        return DenseLayer
+        DenseLayer = Dense(units=100)(flattenLayer) #Num of encoding features
+        dropout_layer = Dropout(rate=0.2)(DenseLayer)
+        return dropout_layer
 
     def show_model_summary(self):
         self.model.summary()

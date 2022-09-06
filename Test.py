@@ -1,3 +1,4 @@
 import random
 
-print(random.sample(range(0,20), 10))
+for i in range(5):
+    print(i)
