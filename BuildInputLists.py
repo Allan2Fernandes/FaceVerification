@@ -6,11 +6,12 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 class BuildInputLists:
-    def __init__(self, path):
+    def __init__(self, path, input_shape):
         self.base_path = path
         self.list_of_Image_folders = []
         self.global_positive_list = []
         self.global_negative_list = []
+        self.input_shape = input_shape
         pass
 
     def build_list_Image_folders(self):
@@ -101,25 +102,25 @@ class BuildInputLists:
         for index in positive_list_indices:
             if len(train_left_positive_array) < train_size:
                 #Train Left positive paths
-                image_handler = Image_handler.ImageHandler(left_positive_list[index])
+                image_handler = Image_handler.ImageHandler(left_positive_list[index], self.input_shape)
                 image_handler.set_image_array()
                 image_array = image_handler.get_image_array()
                 train_left_positive_array.append(image_array)
 
                 #Train Right positive paths
-                image_handler = Image_handler.ImageHandler(right_positive_list[index])
+                image_handler = Image_handler.ImageHandler(right_positive_list[index], self.input_shape)
                 image_handler.set_image_array()
                 image_array = image_handler.get_image_array()
                 train_right_positive_array.append(image_array)
             else:
                 # Validation Left positive paths
-                image_handler = Image_handler.ImageHandler(left_positive_list[index])
+                image_handler = Image_handler.ImageHandler(left_positive_list[index], self.input_shape)
                 image_handler.set_image_array()
                 image_array = image_handler.get_image_array()
                 validation_left_positive_array.append(image_array)
 
                 # Validation Right positive paths
-                image_handler = Image_handler.ImageHandler(right_positive_list[index])
+                image_handler = Image_handler.ImageHandler(right_positive_list[index], self.input_shape)
                 image_handler.set_image_array()
                 image_array = image_handler.get_image_array()
                 validation_right_positive_array.append(image_array)
@@ -159,12 +160,12 @@ class BuildInputLists:
         print("Building left negative array")
         for path in left_negative_list:
             if len(train_left_negative_array) < train_size:
-                image_handler = Image_handler.ImageHandler(path)
+                image_handler = Image_handler.ImageHandler(path, self.input_shape)
                 image_handler.set_image_array()
                 image_array = image_handler.get_image_array()
                 train_left_negative_array.append(image_array)
             else:
-                image_handler = Image_handler.ImageHandler(path)
+                image_handler = Image_handler.ImageHandler(path, self.input_shape)
                 image_handler.set_image_array()
                 image_array = image_handler.get_image_array()
                 validation_left_negative_array.append(image_array)
@@ -176,12 +177,12 @@ class BuildInputLists:
         print("Building right negative array")
         for path in right_negative_list:
             if len(train_right_negative_array) < train_size:
-                image_handler = Image_handler.ImageHandler(path)
+                image_handler = Image_handler.ImageHandler(path, self.input_shape)
                 image_handler.set_image_array()
                 image_array = image_handler.get_image_array()
                 train_right_negative_array.append(image_array)
             else:
-                image_handler = Image_handler.ImageHandler(path)
+                image_handler = Image_handler.ImageHandler(path, self.input_shape)
                 image_handler.set_image_array()
                 image_array = image_handler.get_image_array()
                 validation_right_negative_array.append(image_array)
