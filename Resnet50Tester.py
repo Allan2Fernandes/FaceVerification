@@ -12,10 +12,15 @@ def difference_layer(tensor_set):
     return difference
 
 resnet_50_left = ResNet50(weights='imagenet', include_top=False)
-resnet_50_left.summary()
-#my_resnet_50_left = keras.Model(inputs=resnet_50_left.input, outputs=resnet_50_left.get_layer('conv5_block3_out').output, name='resnet50_left')
-#my_resnet_50_left.trainable = False
+#resnet_50_left.summary()
 
+extra_layer = tf.keras.layers.MaxPool2D(strides = (2,2), pool_size =(2,2))(resnet_50_left.get_layer('conv5_block3_out').output)
+extra_layer = tf.keras.layers.Conv2D(filters = 4096, kernel_size = (3,3), strides = (1,1), activation = 'relu')(extra_layer)
+extra_layer = tf.keras.layers.MaxPool2D(strides = (2,2), pool_size =(2,2))(extra_layer)
+my_resnet_50_left = keras.Model(inputs=resnet_50_left.input, outputs=extra_layer, name='resnet50_left')
+my_resnet_50_left.trainable = False
+
+my_resnet_50_left.summary()
 """
 resnet_50_right = ResNet50(weights='imagenet', include_top=False)
 my_resnet_50_right = keras.Model(inputs=resnet_50_right.input, outputs=resnet_50_right.get_layer('conv5_block3_out').output, name='resnet50_right')

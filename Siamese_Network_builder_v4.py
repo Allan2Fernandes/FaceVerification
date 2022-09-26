@@ -41,7 +41,7 @@ class Siamese_Network_builder_v4:
         layer6 = Conv2D(filters=self.num_of_filters*4, kernel_size=(4, 4), activation='relu')(layer5)
 
         layer7 = Flatten()(layer6)
-        encoding_layer = Dense(units=4096)(layer7)
+        encoding_layer = Dense(units=128)(layer7)
         return encoding_layer
 
 

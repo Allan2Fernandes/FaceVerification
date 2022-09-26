@@ -1,6 +1,6 @@
 import tensorflow as tf
 from keras import Model
-from keras.layers import Dense, Input, Lambda, GlobalAveragePooling2D, Flatten, Conv2D, MaxPool2D
+from keras.layers import Dense, Input, Lambda, GlobalAveragePooling2D, Dropout, ReLU
 from keras.activations import sigmoid
 from keras import optimizers
 from keras.applications.resnet import ResNet50
@@ -25,20 +25,24 @@ class Resnet50_siamese_network:
         input_right = Input(shape=input_shape)
         left_encoding = self.get_encoding_layer(input_left, "left")
         right_encoding = self.get_encoding_layer(input_right, "right")
-
         difference_layer = Lambda(self.difference_layer)([left_encoding, right_encoding])
-        logistic_layer = Dense(units = 1, activation=sigmoid)(difference_layer)
+        activated_layer = ReLU()(difference_layer)
+        logistic_layer = Dense(units = 1, activation=sigmoid)(activated_layer)
         self.model = Model(inputs=[input_left, input_right], outputs = logistic_layer)
         pass
 
     def get_encoding_layer(self, input_layer, side):
         resnet_50 = ResNet50(include_top=False, weights="imagenet")
-        my_resnet_50 = keras.Model(inputs=resnet_50.input,outputs=resnet_50.get_layer('conv5_block3_out').output,name='resnet50_' + side) #Avoid 2 layers witht the same name
-        my_resnet_50.trainable = True
+        layers = resnet_50.layers
+        my_resnet_50 = keras.Model(inputs=resnet_50.input,outputs=resnet_50.get_layer(layers[-1].name).output,name='resnet50_' + side) #Avoid 2 layers witht the same name
+        my_resnet_50.trainable = False
         encoding = my_resnet_50(input_layer)
         encoding = GlobalAveragePooling2D()(encoding)
-        encoding = keras.layers.Dense(1000)(encoding)
-        encoding_layer = Dense(1000)(encoding)
+        encoding_layer = Dense(units = 4096, activation = 'relu')(encoding)
+        encoding_layer = Dropout(rate = 0.2)(encoding_layer)
+        encoding_layer = Dense(units=4096, activation = 'relu')(encoding_layer)
+        encoding_layer = Dropout(rate=0.2)(encoding_layer)
+        encoding_layer = Dense(units=4096)(encoding_layer)
         return encoding_layer
 
 

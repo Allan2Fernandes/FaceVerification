@@ -1,8 +1,9 @@
 import tensorflow as tf
 from keras import Model
-from keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Input, Lambda, Dropout
+from keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Input, Lambda, ReLU, Dropout
 from keras.activations import sigmoid
-from keras import optimizers
+from keras.optimizers import RMSprop
+from keras import backend as K
 
 
 
@@ -19,19 +20,33 @@ class Siamese_Network_builder_v3:
         difference = tf.math.abs(tensor2-tensor1)
         return difference
 
-    def define_Model_architecture(self):
-        input_shape = self.input_shape #Un-hardcode this later
-        input_left = Input(shape=input_shape)
-        input_right = Input(shape=input_shape)
-        left_encoding = self.get_encoding_layer(input_left, self.num_of_filters)
-        right_encoding = self.get_encoding_layer(input_right, self.num_of_filters)
+    def euclidean_distance(self, vects):
+        x, y = vects
+        sum_square = K.sum(K.square(x - y), axis=1, keepdims=True)
+        return K.sqrt(K.maximum(sum_square, K.epsilon()))
 
-        difference_layer = Lambda(self.difference_layer)([left_encoding, right_encoding])
-        logistic_layer = Dense(units = 1, activation=sigmoid)(difference_layer)
-        self.model = Model(inputs=[input_left, input_right], outputs = logistic_layer)
+    def contrastive_loss_with_margin(self, margin):
+        def contrastive_loss(y_true, y_pred):
+            square_pred = K.square(y_pred)
+            margin_square = K.square(K.maximum(margin - y_pred, 0))
+            return (y_true * square_pred + (1 - y_true) * margin_square)
+        return contrastive_loss
+
+    def define_Model_architecture(self):
+        common_block = self.get_encoding_layer(input_shape=self.input_shape, num_of_filters=self.num_of_filters)
+
+        left_input = Input(shape=self.input_shape, name="left_input")
+        output_left = common_block(left_input)
+        right_input = Input(shape=self.input_shape, name="right_input")
+        output_right =common_block(right_input)
+
+        output_layer = Lambda(self.euclidean_distance, name="output_layer")([output_left, output_right])
+
+        self.model = Model(inputs=[left_input, right_input], outputs = output_layer)
         pass
 
-    def get_encoding_layer(self, input_layer, num_of_filters):
+    def get_encoding_layer(self, input_shape, num_of_filters):
+        input_layer = Input(shape = input_shape)
         conv_layer0 = Conv2D(padding = 'same', kernel_size=(3,3), strides = (1,1), filters=num_of_filters, activation='relu')(input_layer)
         max_pooling0 = MaxPool2D(padding = 'same', strides = (2,2), pool_size=(2,2))(conv_layer0)
 
@@ -50,13 +65,15 @@ class Siamese_Network_builder_v3:
         max_pooling4 = MaxPool2D(padding='same', strides=(2, 2), pool_size=(2, 2))(conv_layer6)
 
         flatten_layer = Flatten()(max_pooling4)
-        dense_layer0 = Dense(units=512, activation='relu')(flatten_layer)
+        dense_layer0 = Dense(units=512, activation = 'relu')(flatten_layer)
         dropout_dense0 = Dropout(rate=0.1)(dense_layer0)
-        dense_layer1 = Dense(units=512, activation='relu')(dropout_dense0)
-        dropout_dense1 = Dropout(rate=0.1)(dense_layer1)
+        dense_layer1 = Dense(units=512, activation = 'relu')(dropout_dense0)
+        #dropout_dense1 = Dropout(rate=0.1)(dense_layer1)
 
-        encoding_layer = Dense(units=256, activation='relu')(dropout_dense1)
-        return encoding_layer
+        #encoding_layer = Dense(units=256, activation='sigmoid')(dropout_dense1)
+
+        model = Model(inputs = input_layer, outputs=dense_layer1)
+        return model
 
 
 
@@ -65,8 +82,8 @@ class Siamese_Network_builder_v3:
         pass
 
     def compile_the_model(self):
-        optimizer = optimizers.Adam(learning_rate = 0.00001, beta_1 = 0.9, beta_2 = 0.999, epsilon=1e-07)
-        self.model.compile(loss=tf.keras.losses.BinaryCrossentropy(), optimizer=optimizer, metrics=['accuracy'])
+        optimizer1 = RMSprop(learning_rate=0.00001)
+        self.model.compile(loss=self.contrastive_loss_with_margin(1), optimizer=optimizer1)
         pass
 
     def get_the_model(self):
@@ -77,6 +94,6 @@ class Siamese_Network_builder_v3:
         pass
 
     def load_the_model(self):
-        return tf.keras.models.load_model(self.save_path, custom_objects={'difference_layer': self.difference_layer})
+        return tf.keras.models.load_model(self.save_path, custom_objects={'euclidean_distance': self.euclidean_distance, 'contrastive_loss' : self.contrastive_loss_with_margin})
 
     pass
