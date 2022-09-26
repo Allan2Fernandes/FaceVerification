@@ -7,6 +7,7 @@ import SIamese_Network_builder_v3 as sn3
 import Siamese_Network_builder_v4 as sn4
 import Resnet50_siamese_network as r50sn
 import MobileNet_v3_siamese_network as mv3ssn
+import Resnet50_with_custom_loss as rs50cl
 import tensorflow as tf
 import Image_handler as ih
 
@@ -15,13 +16,13 @@ def display_image_from_array(array):
     plt.imshow(array, interpolation='nearest')
     plt.show()
 
-load_model = True
-train_model = False
+load_model = False
+train_model = True
 
 train_size = 13000
 val_size = 500
 num_of_filters = 32
-basePath = "C:/Users/allan/OneDrive/Desktop/Face verification dataset/Face Data/Face Dataset"
+basePath = "C:/Users/allan/Desktop/Face verification dataset/Face Data/Face Dataset"
 save_path = "saved_model/my_model" + str(num_of_filters) + ".h5"
 resnet_input_shape = (224, 224, 3)
 
@@ -44,10 +45,10 @@ resnet_input_shape = (224, 224, 3)
 #2048: peak loss = 0.5747, peak accuracy = 0.7650
 #Siamese network v3 peaked at 0.81 and potential for higher
 
-siamese_network = sn3.Siamese_Network_builder_v3(num_of_filters=num_of_filters, save_path=save_path, input_shape=resnet_input_shape)
-siamese_network.define_Model_architecture()
-siamese_network.show_model_summary()
-siamese_network.compile_the_model()
+#siamese_network = sn3.Siamese_Network_builder_v3(num_of_filters=num_of_filters, save_path=save_path, input_shape=resnet_input_shape)
+#siamese_network.define_Model_architecture()
+#siamese_network.show_model_summary()
+#siamese_network.compile_the_model()
 
 #siamese_network = sn4.Siamese_Network_builder_v4(num_of_filters=num_of_filters, save_path=save_path)
 #siamese_network.define_Model_architecture()
@@ -63,6 +64,11 @@ siamese_network.compile_the_model()
 #siamese_network.define_Model_architecture()
 #siamese_network.compile_the_model()
 #siamese_network.show_model_summary()
+
+siamese_network = rs50cl.Resnet50_siamese_network(save_path=save_path, input_shape=resnet_input_shape)
+siamese_network.define_Model_architecture()
+siamese_network.compile_the_model()
+siamese_network.show_model_summary()
 
 if not load_model:
     model = siamese_network.get_the_model()
@@ -89,20 +95,5 @@ if train_model:
     pretrained_model = pn.Prebuilt_Network(model, train_left_array, train_right_array, train_label_array,
                                            validation_left_array, validation_right_array, validation_label_array,
                                            save_path)
-    pretrained_model.train_the_model()
-    pretrained_model.save_the_model()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    #pretrained_model.train_the_model()
+    #pretrained_model.save_the_model()
